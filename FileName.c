@@ -77,14 +77,14 @@ int isOrigin(int origin[], int dataPointer[], int currentX, int currentY) {
 }
 
 //Prints the UI
-void printUI(int board[9][3], int scoreboard[], int player) {
+void printUI(int board[9][3], int scoreboard[], int player, int* gameState) {
     //UI elements syntax
     //* => 2D Data
     //$ => 1D Data
     //n => New Line
     //'>' => End Format
     int screenLength = 57, screenHeight = 20;
-    int boardDataPointer[5] = {0, 0, 0, 0, 0}; //In order, dataPointerX{0}, dataPointerY{1}, screenPointerX{2}, screenPointerY{3}, formatPointer{4}
+    int boardDataPointer[6] = {0, 0, 0, 0, 0, 1}; //In order, dataPointerX{0}, dataPointerY{1}, screenPointerX{2}, screenPointerY{3}, formatPointer{4}, isEnabled{5}
 
     int boardOrigin[2] = { 20, 5 };
     char boardFormat[] = "    +   +   +   +n"
@@ -97,49 +97,60 @@ void printUI(int board[9][3], int scoreboard[], int player) {
                         "  3 | * | * | * |n"
                         "+   +---+---+---+>";
 
-    int playerTurnDataPointer[5] = { 0, 0, 0, 0, 0 };
+    int playerTurnDataPointer[6] = { 0, 0, 0, 0, 0, 1 };
     int playerTurnTextOrigin[2] = { 22, 16 };
     char playerTurnText[] = "PLAYER # TURN>";
     
-    int playerMessageDataPointer[5] = { 0, 0, 0, 0, 0 };
+    int playerMessageDataPointer[6] = { 0, 0, 0, 0, 0, 1 };
     int playerMessageOrigin[2] = { 14, 17 };
     char playerMessageText[] = "ENTER COLUMN AND ROW (E.G, 0 1)>";
 
-    int playerOneDataPointer[5] = { 0, 0, 0, 0, 0 };
+    int playerOneDataPointer[6] = { 0, 0, 0, 0, 0, 1 };
     int playerOneScoreOrigin[2] = { 5, 5 };
     char playerOneScoreFormat[] = "+----------+n"
 								"| PLAYER 1 |n"
 								"| SCORE: # |n"
 								"+----------+>";
 
-    int playerTwoDataPointer[5] = { 0, 0, 0, 0, 0 };
+    int playerTwoDataPointer[6] = { 0, 0, 0, 0, 0, 1 };
     int playerTwoScoreOrigin[2] = { 40, 5 };
     char playerTwoScoreFormat[] = "+----------+n"
                                 "| PLAYER 2 |n"
                                 "| SCORE: # |n"
                                 "+----------+>";
+
+
+
+    switch (*gameState) {
+    case 2: //Winner Screen; sets board to 0, displays winning message and prompts user to play again
+        boardDataPointer[5] = 0;
+        playerMessageDataPointer[5] = 0;
+        break;
+    default:
+        break;
+    }
     //UI Rendering
     //There will be a reference to the origin of the UI element and the dataPointer will be used to keep track of the current position of the data being printed
     //There would be three types of data pointers: 2D data pointer, 1D data pointer and text data pointer
     for (int y = 0; y < screenHeight; y++) {
         for (int x = 0; x < screenLength; x++) { 
-            if (isOrigin(boardOrigin, boardDataPointer, x, y) == 1) {
+            if (isOrigin(boardOrigin, boardDataPointer, x, y) == 1 && boardDataPointer[5] == 1) {
                 printFormat(NULL, NULL, board, boardFormat, boardDataPointer);
                 continue;
             }
-            if (isOrigin(playerTurnTextOrigin, playerTurnDataPointer, x, y) == 1) {
+            if (isOrigin(playerTurnTextOrigin, playerTurnDataPointer, x, y) == 1 && boardDataPointer[5] == 1) {
                 printFormat(player, NULL, board, playerTurnText, playerTurnDataPointer);
                 continue;
             }
-            if (isOrigin(playerMessageOrigin, playerMessageDataPointer, x, y) == 1) {
+            if (isOrigin(playerMessageOrigin, playerMessageDataPointer, x, y) == 1 && playerMessageDataPointer[5] == 1) {
                 printFormat(NULL, NULL, board, playerMessageText, playerMessageDataPointer);
                 continue;
             }
-            if (isOrigin(playerOneScoreOrigin, playerOneDataPointer, x, y) == 1) {
+            if (isOrigin(playerOneScoreOrigin, playerOneDataPointer, x, y) == 1 && playerOneDataPointer[5] == 1) {
                 printFormat(scoreboard[0], NULL, board, playerOneScoreFormat, playerOneDataPointer);
                 continue;
             }
-            if (isOrigin(playerTwoScoreOrigin, playerTwoDataPointer, x, y) == 1) {
+            if (isOrigin(playerTwoScoreOrigin, playerTwoDataPointer, x, y) == 1 && playerTwoDataPointer[5] == 1) {
                 printFormat(scoreboard[1], NULL, board, playerTwoScoreFormat, playerTwoDataPointer);
                 continue;
             }
@@ -167,7 +178,7 @@ void updateData(int board[9][3], int x, int y, int n) {
     }
 }
 //To be optimized
-int checkForWinner(int board[9][3], int* gameOver, int scoreboard[]) {
+int checkForWinner(int board[9][3], int scoreboard[]) {
     //Horizontal
     int playerOneCount = 0;
     int playerTwoCount = 0;
@@ -293,7 +304,7 @@ int checkForWinner(int board[9][3], int* gameOver, int scoreboard[]) {
 
     return 0;
 }
-void playerInput(int board[9][3], int scoreboard[], int player){
+void playerInput(int board[9][3], int scoreboard[], int player, int* gameState){
     //player input array where index 0 is column and index 1 is row
     int playerInput[2] = { 0 };
     int valid = 0;
@@ -307,18 +318,11 @@ void playerInput(int board[9][3], int scoreboard[], int player){
                     for (int j = 0; j < 2; j++) { playerInput[j] = 0; }
 					while ((getchar()) != '\n'); //Clears input buffer if the user enters a non-integer value, otherwise it would cause an infinite loop
 					system("cls");
-					printUI(board, scoreboard, player);
+					printUI(board, scoreboard, player, &gameState);
 					printf("{Invalid Coordinate Input: Please enter a number between 1-3 (inclusive)}");
                     break;
                 }
             }
-            //if (playerInput[0] < 1 || playerInput[0] > 3 || playerInput[1] < 1 || playerInput[1] > 3) {
-            //    for (int i = 0; i < 2; i++) { playerInput[i] = 0; }
-            //    while ((getchar()) != '\n'); //Clears input buffer if the user enters a non-integer value, otherwise it would cause an infinite loop
-            //    system("cls");
-            //    printUI(board, scoreboard, player);
-            //    printf("{Invalid Coordinate Input: Please enter a number between 1-3 (inclusive)}");
-            //}
         }
 
         //Checks if the coordinate is already taken, if taken, it will prompt the user to enter a new coordinate
@@ -327,7 +331,7 @@ void playerInput(int board[9][3], int scoreboard[], int player){
             playerInput[0] = 0;
             playerInput[1] = 0;
             system("cls");
-            printUI(board, scoreboard, player);
+            printUI(board, scoreboard, player, &gameState);
             printf("{Invalid Input: Please enter a coordinate with a free space}");
         }
     }
@@ -336,21 +340,27 @@ void playerInput(int board[9][3], int scoreboard[], int player){
 
 int main()
 {
-    int isGameOver = 0;
+    //0 = Program Running, 1 = Game Running, 2 = Winner Screen, 3 = Game Over Screen 
+    int gameState = 1;
+    int isRunning = 0;
+    int winningScore = 2;
     int board[][3] = { {0, 0, 0}, {1, 0, 0}, {2, 0, 0},
                     {0, 1, 0}, {1, 1, 0}, {2, 1, 0},
                     {0, 2, 0}, {1, 2, 0}, {2, 2, 0} };
     int scoreboard[] = {0, 0};
     int isWinner = 0;
-    while (isGameOver == 0) {
-        for (int i = 1; i < 3; i++) {
-            printUI(board, scoreboard, i);
-            playerInput(board, scoreboard, i);
-            system("cls"); //Remember to change the console clear command according to the compiler
-            isWinner = checkForWinner(board, &isGameOver, scoreboard);
-            if (isWinner != 0) {
-                resetData(board);
-                i = 1;
+    while (isRunning == 0) {
+        if (gameState == 1 || gameState == 2) {
+            for (int i = 1; i < 3; i++) {
+                printUI(board, scoreboard, i, &gameState);
+                playerInput(board, scoreboard, i, &gameState);
+                system("cls"); //Remember to change the console clear command according to the compiler
+                isWinner = checkForWinner(board, scoreboard);
+                if (isWinner != 0) {
+                    if (scoreboard[i-1] >= winningScore) { gameState = 2; }
+                    resetData(board);
+                    i = 1;
+                }
             }
         }
     }
