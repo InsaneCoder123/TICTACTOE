@@ -148,7 +148,7 @@ void printUI(int board[9][3], int scoreboard[], int player, int gameState) {
     int endMessageOrigin[2] = { 1, 1 };
     char endMessageFormat[] = "+------------------------------------+n"
                                 "| T H A N K S  F O R  P L A Y I N G  |n"
-                                "|    additioNal message              |n"
+                                "|            By Kem < 3              |n"
                                 "+------------------------------------+>";
 
 
@@ -362,7 +362,7 @@ void runGame(int board[9][3], int scoreboard[], int* gameState, int* winningScor
     }
 }
 
-void promptTryAgain(int board[9][3], int scoreboard[], int* gameState) {
+void promptTryAgain(int board[9][3], int scoreboard[], int* gameState, int* isRunning) {
 	char optionTry = ' ';
 	while (0 == 0) {
 		while ((getchar()) != '\n'); //Clears input buffer
@@ -378,6 +378,7 @@ void promptTryAgain(int board[9][3], int scoreboard[], int* gameState) {
 			    system("cls");
 			    *gameState = 3;    
 			    printUI(board, scoreboard, 0, *gameState);
+                *isRunning = 0;
 			    return;
 		    default:
 			    system("cls");
@@ -408,17 +409,15 @@ void promptConfig(int board[9][3], int scoreboard[], int* gameState, int* winnin
 int main(){
     //0 = CONFIG, 1 = Game Running, 2 = Winner Screen, 3 = Game Over Screen 
     int gameState = 0;
-    int isRunning = 0;
+    int isRunning = 1;
     int winningScore = 0;
-    int valid = 0;
     char optionTry = ' ';
     int board[][3] = { {0, 0, 0}, {1, 0, 0}, {2, 0, 0},
                     {0, 1, 0}, {1, 1, 0}, {2, 1, 0},
                     {0, 2, 0}, {1, 2, 0}, {2, 2, 0} };
     int scoreboard[] = { 0, 0, 0, 0 }; //Player 1 score, Player 2 score, Winner, Turns
     int isWinner = 0;
-    while (isRunning == 0) {
-        valid = 0;
+    while (isRunning == 1) {
         switch (gameState) {
         case 0: //Config Screen
             printUI(board, scoreboard, 0, gameState);
@@ -429,7 +428,7 @@ int main(){
             break;
         case 2: //Winner Screen and Try again screen
             printUI(board, scoreboard, 0, gameState);
-            promptTryAgain(board, scoreboard, &gameState);
+            promptTryAgain(board, scoreboard, &gameState, &isRunning);
             break;
         }
     }
